@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { parseCSV } from "@/lib/csv";
 
 type PoolEntry = { _id: string; value: string; tags: string[] };
 
@@ -11,6 +12,11 @@ export default function AnswerPoolPage() {
   const [tagsInput, setTagsInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [csvPreview, setCsvPreview] = useState<{ value: string; tags: string[] }[]>([]);
+  const [csvMessage, setCsvMessage] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const [editTags, setEditTags] = useState("");
 
   async function loadEntries(tag?: string) {
     setLoading(true);
@@ -62,6 +68,76 @@ export default function AnswerPoolPage() {
     loadEntries(filterTag.trim() || undefined);
   }
 
+  function startEdit(entry: PoolEntry) {
+    setEditingId(entry._id);
+    setEditValue(entry.value);
+    setEditTags(entry.tags.join(", "));
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditValue("");
+    setEditTags("");
+  }
+
+  async function saveEdit(id: string) {
+    const tags = editTags.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean);
+    await fetch(`/api/admin/answer-pool/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ value: editValue, tags }),
+    });
+    cancelEdit();
+    loadEntries(filterTag.trim() || undefined);
+  }
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = reader.result as string;
+      const rows = parseCSV(text);
+      const [header, ...dataRows] = rows;
+
+      const valueIdx = header.findIndex((h) => h.trim().toLowerCase() === "value");
+      const tagsIdx = header.findIndex((h) => h.trim().toLowerCase() === "tags");
+
+      if (valueIdx === -1 || tagsIdx === -1) {
+        setCsvMessage('CSV must have "value" and "tags" columns.');
+        return;
+      }
+
+      const parsed = dataRows
+        .filter((r) => r[valueIdx]?.trim())
+        .map((r) => ({
+          value: r[valueIdx].trim(),
+          tags: r[tagsIdx].split(";").map((t) => t.trim()).filter(Boolean),
+        }));
+
+      setCsvPreview(parsed);
+      setCsvMessage(`Parsed ${parsed.length} rows — review below, then click Import.`);
+    };
+    reader.readAsText(file);
+  }
+
+  async function handleCsvImport() {
+    const res = await fetch("/api/admin/answer-pool/import", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rows: csvPreview }),
+    });
+    const data = await res.json();
+
+    setCsvMessage(
+      `Imported: ${data.added} new, ${data.updated} updated` +
+      (data.errors?.length ? ` (${data.errors.length} skipped)` : "")
+    );
+    setCsvPreview([]);
+    loadEntries(filterTag.trim() || undefined);
+  }
+
   async function handleDelete(id: string, value: string) {
     if (!confirm(`Remove "${value}" from the pool?`)) return;
 
@@ -108,6 +184,45 @@ export default function AnswerPoolPage() {
         {message && <p className="text-sm text-gray-700">{message}</p>}
       </form>
 
+      {/* CSV Import */}
+      <div className="border rounded p-4 mb-8 space-y-3">
+        <h2 className="font-medium">Import from CSV</h2>
+        <p className="text-sm text-gray-600">
+          CSV must have two columns: <code>value</code> and <code>tags</code> (tags separated by semicolons, e.g. <code>military-chief;male</code>).
+          Existing values get their tags merged in; new values get added.
+        </p>
+
+        <input type="file" accept=".csv" onChange={handleFileSelect} />
+
+        {csvMessage && <p className="text-sm text-gray-700">{csvMessage}</p>}
+
+        {csvPreview.length > 0 && (
+          <>
+            <div className="max-h-64 overflow-y-auto border rounded">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-100 sticky top-0">
+                  <tr>
+                    <th className="text-left p-2">Value</th>
+                    <th className="text-left p-2">Tags</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {csvPreview.map((row, i) => (
+                    <tr key={i} className="border-t">
+                      <td className="p-2">{row.value}</td>
+                      <td className="p-2 text-gray-600">{row.tags.join(", ")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <button onClick={handleCsvImport} className="bg-black text-white px-4 py-2 rounded">
+              Import {csvPreview.length} Rows
+            </button>
+          </>
+        )}
+      </div>
+
       {/* Filter + List */}
       <div className="flex gap-2 mb-4">
         <input
@@ -129,22 +244,47 @@ export default function AnswerPoolPage() {
       ) : (
         <ul className="space-y-2">
           {entries.map((entry) => (
-            <li
-              key={entry._id}
-              className="flex justify-between items-center border rounded p-3"
-            >
-              <div>
-                <span className="font-medium">{entry.value}</span>
-                <span className="text-gray-500 text-sm ml-2">
-                  [{entry.tags.join(", ")}]
-                </span>
-              </div>
-              <button
-                onClick={() => handleDelete(entry._id, entry.value)}
-                className="text-red-600 text-sm hover:underline"
-              >
-                Delete
-              </button>
+            <li key={entry._id} className="border rounded p-3">
+              {editingId === entry._id ? (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="w-full border rounded p-2"
+                  />
+                  <input
+                    type="text"
+                    value={editTags}
+                    onChange={(e) => setEditTags(e.target.value)}
+                    placeholder="tags, comma-separated"
+                    className="w-full border rounded p-2"
+                  />
+                  <div className="flex gap-2">
+                    <button onClick={() => saveEdit(entry._id)} className="bg-black text-white px-3 py-1 rounded text-sm">
+                      Save
+                    </button>
+                    <button onClick={cancelEdit} className="border px-3 py-1 rounded text-sm">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="font-medium">{entry.value}</span>
+                    <span className="text-gray-500 text-sm ml-2">[{entry.tags.join(", ")}]</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={() => startEdit(entry)} className="text-blue-600 text-sm hover:underline">
+                      Edit
+                    </button>
+                    <button onClick={() => handleDelete(entry._id, entry.value)} className="text-red-600 text-sm hover:underline">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              )}
             </li>
           ))}
         </ul>
