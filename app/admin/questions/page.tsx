@@ -37,6 +37,39 @@ export default function QuestionsPage() {
         questionText: "", requiredTags: "", excludedTags: "", correctAnswer: "", explanation: "",
     });
 
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+    function toggleSelect(id: string) {
+        setSelectedIds((prev) => {
+            const updated = new Set(prev);
+            if (updated.has(id)) updated.delete(id);
+            else updated.add(id);
+            return updated;
+        });
+    }
+
+    function toggleSelectAll() {
+        if (selectedIds.size === questions.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(questions.map((q) => q._id)));
+        }
+    }
+
+    async function handleBulkDelete() {
+        if (selectedIds.size === 0) return;
+        if (!confirm(`Delete ${selectedIds.size} selected questions? This cannot be undone.`)) return;
+
+        await fetch("/api/admin/questions/bulk-delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ids: Array.from(selectedIds) }),
+        });
+
+        setSelectedIds(new Set());
+        loadQuestions();
+    }
+
     async function loadCategories() {
         const res = await fetch("/api/admin/categories");
         const data = await res.json();
@@ -332,6 +365,27 @@ export default function QuestionsPage() {
                 )}
             </div>
 
+            {!loading && questions.length > 0 && (
+                <div className="flex justify-between items-center mb-2">
+                    <label className="flex items-center gap-2 text-sm">
+                        <input
+                            type="checkbox"
+                            checked={selectedIds.size === questions.length && questions.length > 0}
+                            onChange={toggleSelectAll}
+                        />
+                        Select All ({selectedIds.size} selected)
+                    </label>
+                    {selectedIds.size > 0 && (
+                        <button
+                            onClick={handleBulkDelete}
+                            className="bg-red-600 text-white px-3 py-1 rounded text-sm"
+                        >
+                            Delete Selected ({selectedIds.size})
+                        </button>
+                    )}
+                </div>
+            )}
+
             {loading ? (
                 <p className="text-gray-500">Loading...</p>
             ) : questions.length === 0 ? (
@@ -387,15 +441,23 @@ export default function QuestionsPage() {
                                 </div>
                             ) : (
                                 <div className="flex justify-between items-start">
-                                    <div>
-                                        <p className="font-medium">{q.questionText}</p>
-                                        <p className="text-sm text-gray-600 mt-1">
-                                            Category: {q.topicCategory?.label} | Correct: {q.correctAnswer}
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            Required: [{q.requiredTags.join(", ")}]
-                                            {q.excludedTags?.length > 0 && ` | Excluded: [${q.excludedTags.join(", ")}]`}
-                                        </p>
+                                    <div className="flex items-start gap-3">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.has(q._id)}
+                                            onChange={() => toggleSelect(q._id)}
+                                            className="mt-1"
+                                        />
+                                        <div>
+                                            <p className="font-medium">{q.questionText}</p>
+                                            <p className="text-sm text-gray-600 mt-1">
+                                                Category: {q.topicCategory?.label} | Correct: {q.correctAnswer}
+                                            </p>
+                                            <p className="text-sm text-gray-500">
+                                                Required: [{q.requiredTags.join(", ")}]
+                                                {q.excludedTags?.length > 0 && ` | Excluded: [${q.excludedTags.join(", ")}]`}
+                                            </p>
+                                        </div>
                                     </div>
                                     <div className="flex gap-3 shrink-0 ml-3">
                                         <button onClick={() => startEdit(q)} className="text-blue-600 text-sm hover:underline">

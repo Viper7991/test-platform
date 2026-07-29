@@ -17,6 +17,7 @@ export default function AnswerPoolPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [editTags, setEditTags] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   async function loadEntries(tag?: string) {
     setLoading(true);
@@ -72,6 +73,37 @@ export default function AnswerPoolPage() {
     setEditingId(entry._id);
     setEditValue(entry.value);
     setEditTags(entry.tags.join(", "));
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const updated = new Set(prev);
+      if (updated.has(id)) updated.delete(id);
+      else updated.add(id);
+      return updated;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (selectedIds.size === entries.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(entries.map((e) => e._id)));
+    }
+  }
+
+  async function handleBulkDelete() {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Delete ${selectedIds.size} selected entries? This cannot be undone.`)) return;
+
+    await fetch("/api/admin/answer-pool/bulk-delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: Array.from(selectedIds) }),
+    });
+
+    setSelectedIds(new Set());
+    loadEntries(filterTag.trim() || undefined);
   }
 
   function cancelEdit() {
@@ -237,6 +269,27 @@ export default function AnswerPoolPage() {
         </button>
       </div>
 
+      {!loading && entries.length > 0 && (
+        <div className="flex justify-between items-center mb-2">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={selectedIds.size === entries.length && entries.length > 0}
+              onChange={toggleSelectAll}
+            />
+            Select All ({selectedIds.size} selected)
+          </label>
+          {selectedIds.size > 0 && (
+            <button
+              onClick={handleBulkDelete}
+              className="bg-red-600 text-white px-3 py-1 rounded text-sm"
+            >
+              Delete Selected ({selectedIds.size})
+            </button>
+          )}
+        </div>
+      )}
+
       {loading ? (
         <p className="text-gray-500">Loading...</p>
       ) : entries.length === 0 ? (
@@ -271,9 +324,16 @@ export default function AnswerPoolPage() {
                 </div>
               ) : (
                 <div className="flex justify-between items-center">
-                  <div>
-                    <span className="font-medium">{entry.value}</span>
-                    <span className="text-gray-500 text-sm ml-2">[{entry.tags.join(", ")}]</span>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(entry._id)}
+                      onChange={() => toggleSelect(entry._id)}
+                    />
+                    <div>
+                      <span className="font-medium">{entry.value}</span>
+                      <span className="text-gray-500 text-sm ml-2">[{entry.tags.join(", ")}]</span>
+                    </div>
                   </div>
                   <div className="flex gap-3">
                     <button onClick={() => startEdit(entry)} className="text-blue-600 text-sm hover:underline">
