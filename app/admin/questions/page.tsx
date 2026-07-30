@@ -38,6 +38,7 @@ export default function QuestionsPage() {
     });
 
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [filterCategory, setFilterCategory] = useState("");
 
     function toggleSelect(id: string) {
         setSelectedIds((prev) => {
@@ -49,10 +50,10 @@ export default function QuestionsPage() {
     }
 
     function toggleSelectAll() {
-        if (selectedIds.size === questions.length) {
+        if (selectedIds.size === filteredQuestions.length) {
             setSelectedIds(new Set());
         } else {
-            setSelectedIds(new Set(questions.map((q) => q._id)));
+            setSelectedIds(new Set(filteredQuestions.map((q) => q._id)));
         }
     }
 
@@ -243,6 +244,10 @@ export default function QuestionsPage() {
         loadQuestions();
     }
 
+    const filteredQuestions = filterCategory
+        ? questions.filter((q) => q.topicCategory?._id === filterCategory)
+        : questions;
+
     return (
         <div className="p-8 max-w-3xl">
             <h1 className="text-2xl font-semibold mb-6">Questions</h1>
@@ -365,12 +370,31 @@ export default function QuestionsPage() {
                 )}
             </div>
 
+            <div className="flex items-center gap-2 mb-4">
+                <label className="text-sm text-gray-600">Filter by category:</label>
+                <select
+                    value={filterCategory}
+                    onChange={(e) => setFilterCategory(e.target.value)}
+                    className="border rounded p-2 text-sm"
+                >
+                    <option value="">All Categories</option>
+                    {categories.map((cat) => (
+                        <option key={cat._id} value={cat._id}>{cat.label}</option>
+                    ))}
+                </select>
+                {filterCategory && (
+                    <span className="text-sm text-gray-500">
+                        Showing {filteredQuestions.length} of {questions.length} questions
+                    </span>
+                )}
+            </div>
+
             {!loading && questions.length > 0 && (
                 <div className="flex justify-between items-center mb-2">
                     <label className="flex items-center gap-2 text-sm">
                         <input
                             type="checkbox"
-                            checked={selectedIds.size === questions.length && questions.length > 0}
+                            checked={selectedIds.size === filteredQuestions.length && filteredQuestions.length > 0}
                             onChange={toggleSelectAll}
                         />
                         Select All ({selectedIds.size} selected)
@@ -388,11 +412,11 @@ export default function QuestionsPage() {
 
             {loading ? (
                 <p className="text-gray-500">Loading...</p>
-            ) : questions.length === 0 ? (
+            ) : filteredQuestions.length === 0 ? (
                 <p className="text-gray-500">No questions yet.</p>
             ) : (
                 <ul className="space-y-3">
-                    {questions.map((q) => (
+                    {filteredQuestions.map((q) => (
                         <li key={q._id} className="border rounded p-4">
                             {editingId === q._id ? (
                                 <div className="space-y-2">
