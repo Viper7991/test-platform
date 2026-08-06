@@ -13,6 +13,7 @@ export type Question = {
 export type TestAttempt = {
   testId: string;
   mode: "mixed" | "marked" | string; // string = category slug for topic mode
+  reattemptOf?: string;
   startedAt: number;
   submittedAt: number | null;
   autoSubmitted: boolean;

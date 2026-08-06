@@ -31,9 +31,22 @@ export function proxy(req: NextRequest) {
     }
   }
 
+  if (pathname.startsWith("/api/user")) {
+    const token = req.cookies.get("user_token")?.value;
+    if (!token) {
+      return NextResponse.json({ error: "Not logged in" }, { status: 401 });
+    }
+    try {
+      jwt.verify(token, process.env.JWT_SECRET as string);
+      return NextResponse.next();
+    } catch {
+      return NextResponse.json({ error: "Not logged in" }, { status: 401 });
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/admin/:path*"],
+  matcher: ["/admin/:path*", "/api/admin/:path*", "/api/user/:path*"],
 };

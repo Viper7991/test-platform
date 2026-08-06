@@ -3,11 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getCategoryBreakdown, getOverallStats, CategoryStats } from "@/lib/test-engine/analytics";
+import { useRouter } from 'next/navigation';
+import { ArrowLeft02Icon } from 'hugeicons-react';
+import Loading from "../components/Loading";
 
 export default function DashboardPage() {
   const [breakdown, setBreakdown] = useState<CategoryStats[]>([]);
   const [overall, setOverall] = useState({ totalTests: 0, totalQuestions: 0, overallAccuracy: 0 });
   const [loaded, setLoaded] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setBreakdown(getCategoryBreakdown());
@@ -16,7 +20,7 @@ export default function DashboardPage() {
   }, []);
 
   if (!loaded) {
-    return <div className="p-8 text-gray-500">Loading...</div>;
+    return <Loading />;
   }
 
   if (overall.totalTests === 0) {
@@ -29,21 +33,31 @@ export default function DashboardPage() {
   }
 
   return (
+    <div className="max-w-screen min-h-screen bg-white dark:bg-slate-900">
     <div className="p-8 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Your Analytics</h1>
+      <div className="flex items-center gap-3 mb-6">
+        <button
+          onClick={() => router.push('/')}
+          aria-label="Back to Home"
+          className="inline-flex items-center justify-center p-1.5 rounded-xl border border-white/70 text-white font-bold bg-transparent transition-all duration-300 ease-in-out hover:border-amber-200 hover:text-amber-200 hover:bg-amber-400/5 hover:shadow-[0_0_18px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-amber-400/20"
+        >
+          <ArrowLeft02Icon size={20} />
+        </button>
+        <h1 className="text-2xl font-bold">Your Analytics</h1>
+      </div>
 
-      <div className="border rounded-lg p-5 mb-6 flex gap-8">
-        <div>
+      <div className="border rounded-lg p-5 mb-6 flex justify-between">
+        <div className="flex flex-col items-center justify-center">
           <p className="text-2xl font-bold">{overall.totalTests}</p>
-          <p className="text-sm text-gray-600">Tests Taken</p>
+          <p className="text-sm text-gray-600 ml-4 md:ml-0">Tests Taken</p>
         </div>
-        <div>
+        <div className="flex flex-col items-center justify-center">
           <p className="text-2xl font-bold">{overall.totalQuestions}</p>
-          <p className="text-sm text-gray-600">Questions Attempted</p>
+          <p className="text-sm text-gray-600 ml-6 md:ml-0">Questions Attempted</p>
         </div>
-        <div>
+        <div className="flex flex-col items-center justify-center">
           <p className="text-2xl font-bold">{overall.overallAccuracy}%</p>
-          <p className="text-sm text-gray-600">Overall Accuracy</p>
+          <p className="text-sm text-gray-600 ml-4 md:ml-0">Overall Accuracy</p>
         </div>
       </div>
 
@@ -58,8 +72,8 @@ export default function DashboardPage() {
                   stat.accuracy < 50
                     ? "text-red-600"
                     : stat.accuracy < 75
-                    ? "text-orange-600"
-                    : "text-green-600"
+                      ? "text-orange-600"
+                      : "text-green-600"
                 }
               >
                 {stat.accuracy}%
@@ -77,10 +91,7 @@ export default function DashboardPage() {
           </li>
         ))}
       </ul>
-
-      <Link href="/" className="inline-block mt-6 text-blue-600 hover:underline">
-        Back to Home
-      </Link>
+    </div>
     </div>
   );
 }

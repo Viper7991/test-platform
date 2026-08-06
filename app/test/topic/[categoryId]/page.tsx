@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { generateTopicTest } from "@/lib/test-engine/generateTest";
 import TestRunner from "../../TestRunner";
 import { Question, PoolEntry } from "@/lib/test-engine/types";
+import Loading from "@/app/components/Loading";
 
 export default function TopicTestPage() {
   const params = useParams();
@@ -36,7 +37,7 @@ export default function TopicTestPage() {
   }, [categoryId]);
 
   if (questionIds === null) {
-    return <div className="p-8 text-gray-500">Loading test...</div>;
+    return <Loading />;
   }
 
   return (

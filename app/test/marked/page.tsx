@@ -5,6 +5,7 @@ import { generateMarkedTest } from "@/lib/test-engine/generateTest";
 import { getMarkedQuestionIds } from "@/lib/test-engine/markedQuestions";
 import TestRunner from "../TestRunner";
 import { Question, PoolEntry } from "@/lib/test-engine/types";
+import Loading from "@/app/components/Loading";
 
 export default function MarkedTestPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -39,7 +40,7 @@ export default function MarkedTestPage() {
   }, []);
 
   if (questionIds === null) {
-    return <div className="p-8 text-gray-500">Loading test...</div>;
+    return <Loading />;
   }
 
   if (questionIds.length === 0) {
