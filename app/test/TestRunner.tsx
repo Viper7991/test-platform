@@ -44,6 +44,7 @@ export default function TestRunner({ mode, reattemptOf, questionIds, allQuestion
   const [submitted, setSubmitted] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [visitedIds, setVisitedIds] = useState<Set<string>>(new Set());
+  const [markedForReviewIds, setMarkedForReviewIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetch("/api/auth/me").then((r) => r.json()).then((d) => setIsLoggedIn(!!d.user));
@@ -77,7 +78,15 @@ export default function TestRunner({ mode, reattemptOf, questionIds, allQuestion
   }, [currentQuestion]);
 
   function selectAnswer(value: string) {
-    setSelectedAnswers((prev) => ({ ...prev, [currentQuestion._id]: value }));
+    setSelectedAnswers((prev) => {
+      const updated = { ...prev };
+      if (updated[currentQuestion._id] === value) {
+        delete updated[currentQuestion._id]; // clicking the same option again deselects it
+      } else {
+        updated[currentQuestion._id] = value;
+      }
+      return updated;
+    });
   }
 
   function toggleMark() {
@@ -150,6 +159,23 @@ export default function TestRunner({ mode, reattemptOf, questionIds, allQuestion
     setCurrentIndex(index);
   }
 
+  function toggleMarkForReview() {
+    setMarkedForReviewIds((prev) => {
+      const updated = new Set(prev);
+      if (updated.has(currentQuestion._id)) {
+        updated.delete(currentQuestion._id);
+      } else {
+        updated.add(currentQuestion._id);
+      }
+      return updated;
+    });
+  }
+
+  function markForReviewAndNext() {
+    toggleMarkForReview();
+    goNext();
+  }
+
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
 
@@ -195,30 +221,46 @@ export default function TestRunner({ mode, reattemptOf, questionIds, allQuestion
               </div>
             </div>
 
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <button
                 onClick={goPrev}
                 disabled={currentIndex === 0}
-                className="px-4 py-2 border rounded disabled:opacity-40"
+                className="px-4 py-2 border rounded bg-white/10 disabled:opacity-40"
               >
                 Previous
+              </button>
+
+              <button
+                onClick={markForReviewAndNext}
+                className="px-4 py-2 border md:hidden border-purple-600 text-purple-700 rounded bg-purple-600/20"
+              >
+                Mark & Next
+              </button>
+              
+              <div className="flex gap-4">
+              <button
+                onClick={markForReviewAndNext}
+                className="px-4 py-2 border hidden md:block border-purple-600 text-purple-700 rounded bg-purple-600/20"
+              >
+                Mark & Next
               </button>
 
               {currentIndex === testQuestions.length - 1 ? (
                 <button
                   onClick={() => handleSubmit(false)}
-                  className="px-4 py-2 bg-black text-white rounded"
+                  className="px-4 py-2 border border-white text-white rounded bg-white/10"
                 >
                   Submit Test
                 </button>
               ) : (
                 <button
                   onClick={goNext}
-                  className="px-4 py-2 bg-black text-white rounded"
+                  className="px-4 py-2 border border-white text-white rounded bg-white/10"
                 >
                   Next
                 </button>
               )}
+              </div>
             </div>
           </div>
           <div className="lg:w-160 xl:w-110 w-full shrink-0 xl:ml-10">
@@ -227,7 +269,7 @@ export default function TestRunner({ mode, reattemptOf, questionIds, allQuestion
               currentIndex={currentIndex}
               visitedIds={visitedIds}
               answeredIds={new Set(Object.keys(selectedAnswers))}
-              markedIds={markedIds}
+              markedIds={markedForReviewIds}
               questionIds={testQuestions.map((q) => q._id)}
               onJump={jumpToQuestion}
             />

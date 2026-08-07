@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import TestRunner from "../../TestRunner";
 import { Question, PoolEntry } from "@/lib/test-engine/types";
 import { formatModeLabel } from "@/lib/test-engine/formatMode";
+import Loading from "@/app/components/Loading";
+
 
 export default function ReattemptPage() {
     const params = useParams();
@@ -68,13 +70,13 @@ export default function ReattemptPage() {
     }
 
     if (questionIds === null) {
-        return <div className="p-8 text-gray-500">Loading...</div>;
+        return <Loading />;
     }
 
     return (
         <div>
             {originalMode && (
-                <p className="text-center text-sm text-gray-600 pt-4">
+                <p className="hidden sm:block text-center bg-gray-600 text-sm text-white p-1">
                     Reattempting: {formatModeLabel(originalMode, categories)}
                 </p>
             )}
