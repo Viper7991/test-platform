@@ -27,3 +27,17 @@ export function parseCSV(text: string): string[][] {
 
   return rows.filter((r) => r.length > 1 || (r.length === 1 && r[0].trim() !== ""));
 }
+
+export function toCSV(rows: string[][]): string {
+  return rows
+    .map((row) =>
+      row
+        .map((field) => {
+          const needsQuotes = /[",\n]/.test(field);
+          const escaped = field.replace(/"/g, '""');
+          return needsQuotes ? `"${escaped}"` : escaped;
+        })
+        .join(",")
+    )
+    .join("\r\n");
+}

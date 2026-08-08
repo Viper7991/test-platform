@@ -188,6 +188,14 @@ export default function AnswerPoolPage() {
   return (
     <div className="p-8 max-w-3xl">
       <h1 className="text-2xl font-semibold mb-6">Answer Pool</h1>
+      <a
+        href="/api/admin/answer-pool/export"
+        className="inline-block mb-6 border px-4 py-2 rounded text-sm"
+      >
+        Export Backup CSV
+      </a>
+
+
 
       {/* Bulk Add */}
       <form onSubmit={handleBulkAdd} className="border rounded p-4 mb-8 space-y-3">
@@ -269,86 +277,90 @@ export default function AnswerPoolPage() {
         </button>
       </div>
 
-      {!loading && entries.length > 0 && (
-        <div className="flex justify-between items-center mb-2">
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={selectedIds.size === entries.length && entries.length > 0}
-              onChange={toggleSelectAll}
-            />
-            Select All ({selectedIds.size} selected)
-          </label>
-          {selectedIds.size > 0 && (
-            <button
-              onClick={handleBulkDelete}
-              className="bg-red-600 text-white px-3 py-1 rounded text-sm"
-            >
-              Delete Selected ({selectedIds.size})
-            </button>
-          )}
-        </div>
-      )}
+      {
+        !loading && entries.length > 0 && (
+          <div className="flex justify-between items-center mb-2">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={selectedIds.size === entries.length && entries.length > 0}
+                onChange={toggleSelectAll}
+              />
+              Select All ({selectedIds.size} selected)
+            </label>
+            {selectedIds.size > 0 && (
+              <button
+                onClick={handleBulkDelete}
+                className="bg-red-600 text-white px-3 py-1 rounded text-sm"
+              >
+                Delete Selected ({selectedIds.size})
+              </button>
+            )}
+          </div>
+        )
+      }
 
-      {loading ? (
-        <p className="text-gray-500">Loading...</p>
-      ) : entries.length === 0 ? (
-        <p className="text-gray-500">No entries found.</p>
-      ) : (
-        <ul className="space-y-2">
-          {entries.map((entry) => (
-            <li key={entry._id} className="border rounded p-3">
-              {editingId === entry._id ? (
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    value={editValue}
-                    onChange={(e) => setEditValue(e.target.value)}
-                    className="w-full border rounded p-2"
-                  />
-                  <input
-                    type="text"
-                    value={editTags}
-                    onChange={(e) => setEditTags(e.target.value)}
-                    placeholder="tags, comma-separated"
-                    className="w-full border rounded p-2"
-                  />
-                  <div className="flex gap-2">
-                    <button onClick={() => saveEdit(entry._id)} className="bg-black text-white px-3 py-1 rounded text-sm">
-                      Save
-                    </button>
-                    <button onClick={cancelEdit} className="border px-3 py-1 rounded text-sm">
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-3">
+      {
+        loading ? (
+          <p className="text-gray-500">Loading...</p>
+        ) : entries.length === 0 ? (
+          <p className="text-gray-500">No entries found.</p>
+        ) : (
+          <ul className="space-y-2">
+            {entries.map((entry) => (
+              <li key={entry._id} className="border rounded p-3">
+                {editingId === entry._id ? (
+                  <div className="space-y-2">
                     <input
-                      type="checkbox"
-                      checked={selectedIds.has(entry._id)}
-                      onChange={() => toggleSelect(entry._id)}
+                      type="text"
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      className="w-full border rounded p-2"
                     />
-                    <div>
-                      <span className="font-medium">{entry.value}</span>
-                      <span className="text-gray-500 text-sm ml-2">[{entry.tags.join(", ")}]</span>
+                    <input
+                      type="text"
+                      value={editTags}
+                      onChange={(e) => setEditTags(e.target.value)}
+                      placeholder="tags, comma-separated"
+                      className="w-full border rounded p-2"
+                    />
+                    <div className="flex gap-2">
+                      <button onClick={() => saveEdit(entry._id)} className="bg-black text-white px-3 py-1 rounded text-sm">
+                        Save
+                      </button>
+                      <button onClick={cancelEdit} className="border px-3 py-1 rounded text-sm">
+                        Cancel
+                      </button>
                     </div>
                   </div>
-                  <div className="flex gap-3">
-                    <button onClick={() => startEdit(entry)} className="text-blue-600 text-sm hover:underline">
-                      Edit
-                    </button>
-                    <button onClick={() => handleDelete(entry._id, entry.value)} className="text-red-600 text-sm hover:underline">
-                      Delete
-                    </button>
+                ) : (
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(entry._id)}
+                        onChange={() => toggleSelect(entry._id)}
+                      />
+                      <div>
+                        <span className="font-medium">{entry.value}</span>
+                        <span className="text-gray-500 text-sm ml-2">[{entry.tags.join(", ")}]</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <button onClick={() => startEdit(entry)} className="text-blue-600 text-sm hover:underline">
+                        Edit
+                      </button>
+                      <button onClick={() => handleDelete(entry._id, entry.value)} className="text-red-600 text-sm hover:underline">
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div >
   );
 }

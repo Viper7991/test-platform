@@ -251,6 +251,11 @@ export default function QuestionsPage() {
     return (
         <div className="p-8 max-w-3xl">
             <h1 className="text-2xl font-semibold mb-6">Questions</h1>
+            <a href="/api/admin/questions/export"
+                className="inline-block mb-6 border px-4 py-2 rounded text-sm"
+            >
+                Export Backup CSV
+            </a>
 
             <form onSubmit={handleSubmit} className="border rounded p-4 mb-8 space-y-3">
                 <textarea
