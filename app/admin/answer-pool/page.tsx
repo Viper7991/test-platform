@@ -186,181 +186,231 @@ export default function AnswerPoolPage() {
   }
 
   return (
-    <div className="p-8 max-w-3xl">
-      <h1 className="text-2xl font-semibold mb-6">Answer Pool</h1>
-      <a
-        href="/api/admin/answer-pool/export"
-        className="inline-block mb-6 border px-4 py-2 rounded text-sm"
-      >
-        Export Backup CSV
-      </a>
+    <div className="min-h-screen bg-gray-50 p-6 md:p-8 font-sans">
+      <div className="max-w-3xl mx-auto space-y-8">
 
+        {/* Header & Export */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+            Answer Pool
+          </h1>
+          <a
+            href="/api/admin/answer-pool/export"
+            className="inline-flex items-center justify-center px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-gray-200"
+          >
+            <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            Export Backup CSV
+          </a>
+        </div>
 
-
-      {/* Bulk Add */}
-      <form onSubmit={handleBulkAdd} className="border rounded p-4 mb-8 space-y-3">
-        <h2 className="font-medium">Bulk Add Values</h2>
-
-        <textarea
-          placeholder={"One value per line, e.g.\nFrance\nGermany\nJapan"}
-          value={bulkText}
-          onChange={(e) => setBulkText(e.target.value)}
-          rows={6}
-          className="w-full border rounded p-2 font-mono text-sm"
-        />
-
-        <input
-          type="text"
-          placeholder="Tags for all of the above, comma-separated (e.g. country)"
-          value={tagsInput}
-          onChange={(e) => setTagsInput(e.target.value)}
-          className="w-full border rounded p-2"
-        />
-
-        <button type="submit" className="bg-black text-white px-4 py-2 rounded">
-          Add All
-        </button>
-
-        {message && <p className="text-sm text-gray-700">{message}</p>}
-      </form>
-
-      {/* CSV Import */}
-      <div className="border rounded p-4 mb-8 space-y-3">
-        <h2 className="font-medium">Import from CSV</h2>
-        <p className="text-sm text-gray-600">
-          CSV must have two columns: <code>value</code> and <code>tags</code> (tags separated by semicolons, e.g. <code>military-chief;male</code>).
-          Existing values get their tags merged in; new values get added.
-        </p>
-
-        <input type="file" accept=".csv" onChange={handleFileSelect} />
-
-        {csvMessage && <p className="text-sm text-gray-700">{csvMessage}</p>}
-
-        {csvPreview.length > 0 && (
-          <>
-            <div className="max-h-64 overflow-y-auto border rounded">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-100 sticky top-0">
-                  <tr>
-                    <th className="text-left p-2">Value</th>
-                    <th className="text-left p-2">Tags</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {csvPreview.map((row, i) => (
-                    <tr key={i} className="border-t">
-                      <td className="p-2">{row.value}</td>
-                      <td className="p-2 text-gray-600">{row.tags.join(", ")}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <button onClick={handleCsvImport} className="bg-black text-white px-4 py-2 rounded">
-              Import {csvPreview.length} Rows
+        {/* Bulk Add Card */}
+        <form onSubmit={handleBulkAdd} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-4">
+          <h2 className="text-lg font-semibold text-gray-800 border-b border-gray-100 pb-2">
+            Bulk Add Values
+          </h2>
+          <textarea
+            placeholder={"One value per line, e.g.\nFrance\nGermany\nJapan"}
+            value={bulkText}
+            onChange={(e) => setBulkText(e.target.value)}
+            rows={6}
+            className="w-full border text-black border-gray-300 rounded-lg p-3 font-mono text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-sm"
+          />
+          <input
+            type="text"
+            placeholder="Tags for all of the above, comma-separated (e.g. country)"
+            value={tagsInput}
+            onChange={(e) => setTagsInput(e.target.value)}
+            className="w-full border text-black border-gray-300 rounded-lg p-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-sm"
+          />
+          <div className="pt-2">
+            <button type="submit" className="bg-gray-900 text-white font-medium px-6 py-2.5 rounded-lg hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors shadow-sm">
+              Add All
             </button>
-          </>
-        )}
-      </div>
-
-      {/* Filter + List */}
-      <div className="flex gap-2 mb-4">
-        <input
-          type="text"
-          placeholder="Filter by tag (e.g. ceo)"
-          value={filterTag}
-          onChange={(e) => setFilterTag(e.target.value)}
-          className="flex-1 border rounded p-2"
-        />
-        <button onClick={handleFilter} className="border px-4 rounded">
-          Filter
-        </button>
-      </div>
-
-      {
-        !loading && entries.length > 0 && (
-          <div className="flex justify-between items-center mb-2">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={selectedIds.size === entries.length && entries.length > 0}
-                onChange={toggleSelectAll}
-              />
-              Select All ({selectedIds.size} selected)
-            </label>
-            {selectedIds.size > 0 && (
-              <button
-                onClick={handleBulkDelete}
-                className="bg-red-600 text-white px-3 py-1 rounded text-sm"
-              >
-                Delete Selected ({selectedIds.size})
-              </button>
-            )}
           </div>
-        )
-      }
+          {message && (
+            <p className="text-sm font-medium text-blue-700 bg-blue-50 p-3 rounded-lg border border-blue-100 mt-3">
+              {message}
+            </p>
+          )}
+        </form>
 
-      {
-        loading ? (
-          <p className="text-gray-500">Loading...</p>
-        ) : entries.length === 0 ? (
-          <p className="text-gray-500">No entries found.</p>
-        ) : (
-          <ul className="space-y-2">
-            {entries.map((entry) => (
-              <li key={entry._id} className="border rounded p-3">
-                {editingId === entry._id ? (
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={editValue}
-                      onChange={(e) => setEditValue(e.target.value)}
-                      className="w-full border rounded p-2"
-                    />
-                    <input
-                      type="text"
-                      value={editTags}
-                      onChange={(e) => setEditTags(e.target.value)}
-                      placeholder="tags, comma-separated"
-                      className="w-full border rounded p-2"
-                    />
-                    <div className="flex gap-2">
-                      <button onClick={() => saveEdit(entry._id)} className="bg-black text-white px-3 py-1 rounded text-sm">
-                        Save
-                      </button>
-                      <button onClick={cancelEdit} className="border px-3 py-1 rounded text-sm">
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-3">
+        {/* CSV Import Card */}
+        <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-4">
+          <h2 className="text-lg font-semibold text-gray-800 border-b border-gray-100 pb-2">
+            Import from CSV
+          </h2>
+          <p className="text-sm text-gray-500 leading-relaxed">
+            CSV must have two columns: <code className="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded text-xs font-mono">value</code> and <code className="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded text-xs font-mono">tags</code> (tags separated by semicolons, e.g. <code className="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded text-xs font-mono">military-chief;male</code>). Existing values get their tags merged in; new values get added.
+          </p>
+
+          <input
+            type="file"
+            accept=".csv"
+            onChange={handleFileSelect}
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 transition-all cursor-pointer border border-gray-200 rounded-lg p-1.5"
+          />
+
+          {csvMessage && (
+            <p className="text-sm font-medium text-blue-700 bg-blue-50 p-3 rounded-lg border border-blue-100">
+              {csvMessage}
+            </p>
+          )}
+
+          {csvPreview.length > 0 && (
+            <div className="mt-6 space-y-4 pt-4 border-t border-gray-100">
+              <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-xl shadow-inner">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-50 sticky top-0 border-b border-gray-200 shadow-sm z-10">
+                    <tr>
+                      <th className="text-gray-700 font-semibold p-3">Value</th>
+                      <th className="text-gray-700 font-semibold p-3">Tags</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {csvPreview.map((row, i) => (
+                      <tr key={i} className="bg-white hover:bg-gray-50 transition-colors">
+                        <td className="p-3 font-medium text-gray-900">{row.value}</td>
+                        <td className="p-3 text-gray-500">{row.tags.join(", ")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <button
+                onClick={handleCsvImport}
+                className="w-full sm:w-auto bg-gray-900 text-white font-medium px-6 py-2.5 rounded-lg hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors shadow-sm"
+              >
+                Import {csvPreview.length} Rows
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Filter & List Section */}
+        <div className="space-y-4">
+          {/* Filter */}
+          <div className="flex gap-3">
+            <input
+              type="text"
+              placeholder="Filter by tag (e.g. ceo)"
+              value={filterTag}
+              onChange={(e) => setFilterTag(e.target.value)}
+              className="flex-1 border text-black border-gray-300 rounded-lg p-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-sm"
+            />
+            <button
+              onClick={handleFilter}
+              className="bg-white border border-gray-300 text-gray-700 font-medium px-6 py-3 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors shadow-sm"
+            >
+              Filter
+            </button>
+          </div>
+
+          {/* Select All / Delete Toolbar */}
+          {!loading && entries.length > 0 && (
+            <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+              <label className="flex items-center gap-3 text-sm font-medium text-gray-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.size === entries.length && entries.length > 0}
+                  onChange={toggleSelectAll}
+                  className="w-4 h-4 text-gray-900 bg-gray-100 border-gray-300 rounded focus:ring-gray-900 cursor-pointer"
+                />
+                Select All ({selectedIds.size} selected)
+              </label>
+              {selectedIds.size > 0 && (
+                <button
+                  onClick={handleBulkDelete}
+                  className="bg-red-600 text-white font-medium px-4 py-1.5 rounded-lg text-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-colors shadow-sm"
+                >
+                  Delete Selected ({selectedIds.size})
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Entries List */}
+          {loading ? (
+            <div className="text-center p-8 bg-white border border-gray-100 rounded-2xl shadow-sm">
+              <p className="text-gray-500 font-medium animate-pulse">Loading entries...</p>
+            </div>
+          ) : entries.length === 0 ? (
+            <div className="text-center p-12 bg-white border-2 border-gray-200 border-dashed rounded-2xl shadow-sm">
+              <p className="text-gray-500">No entries found.</p>
+            </div>
+          ) : (
+            <ul className="space-y-3">
+              {entries.map((entry) => (
+                <li key={entry._id} className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200">
+                  {editingId === entry._id ? (
+                    <div className="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
                       <input
-                        type="checkbox"
-                        checked={selectedIds.has(entry._id)}
-                        onChange={() => toggleSelect(entry._id)}
+                        type="text"
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        className="w-full border text-black border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
-                      <div>
-                        <span className="font-medium">{entry.value}</span>
-                        <span className="text-gray-500 text-sm ml-2">[{entry.tags.join(", ")}]</span>
+                      <input
+                        type="text"
+                        value={editTags}
+                        onChange={(e) => setEditTags(e.target.value)}
+                        placeholder="tags, comma-separated"
+                        className="w-full border text-black border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      <div className="flex gap-2 pt-1">
+                        <button
+                          onClick={() => saveEdit(entry._id)}
+                          className="bg-gray-900 text-white font-medium px-4 py-1.5 rounded-lg text-sm hover:bg-black transition-colors"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={cancelEdit}
+                          className="bg-white border border-gray-300 text-gray-700 font-medium px-4 py-1.5 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+                        >
+                          Cancel
+                        </button>
                       </div>
                     </div>
-                    <div className="flex gap-3">
-                      <button onClick={() => startEdit(entry)} className="text-blue-600 text-sm hover:underline">
-                        Edit
-                      </button>
-                      <button onClick={() => handleDelete(entry._id, entry.value)} className="text-red-600 text-sm hover:underline">
-                        Delete
-                      </button>
+                  ) : (
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                      <div className="flex items-start sm:items-center gap-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(entry._id)}
+                          onChange={() => toggleSelect(entry._id)}
+                          className="w-4 h-4 mt-1 sm:mt-0 text-gray-900 bg-gray-100 border-gray-300 rounded focus:ring-gray-900 cursor-pointer"
+                        />
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                          <span className="font-semibold text-gray-900">{entry.value}</span>
+                          {entry.tags && entry.tags.length > 0 && (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                              {entry.tags.join(", ")}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2 ml-8 sm:ml-0">
+                        <button
+                          onClick={() => startEdit(entry)}
+                          className="text-blue-600 font-medium text-sm px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors focus:outline-none"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(entry._id, entry.value)}
+                          className="text-red-600 font-medium text-sm px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors focus:outline-none"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        )
-      }
-    </div >
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
