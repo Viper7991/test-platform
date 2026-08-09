@@ -73,7 +73,7 @@ export default function DashboardPage() {
                     ? "text-red-600"
                     : stat.accuracy < 75
                       ? "text-orange-600"
-                      : "text-green-600"
+                      : "text-green-500"
                 }
               >
                 {stat.accuracy}%

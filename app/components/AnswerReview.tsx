@@ -62,15 +62,15 @@ export default function AnswerReview({ answers }: Props) {
               <p className="font-medium">{a.questionText}</p>
               <p className="text-sm mt-1">
                 Your answer:{" "}
-                <span className={a.isCorrect ? "text-green-700" : "text-red-700"}>
+                <span className={a.isCorrect ? "text-green-500" : "text-red-600"}>
                   {a.selected || "(not answered)"}
                 </span>
               </p>
               {!a.isCorrect && (
-                <p className="text-sm text-green-700">Correct answer: {a.correct}</p>
+                <p className="text-sm text-green-500"><span className="font-bold">Correct answer:</span> {a.correct}</p>
               )}
               {a.explanation && (
-                <p className="text-sm text-gray-600 mt-1 italic">{a.explanation}</p>
+                <p className="text-sm text-gray-300 mt-1 italic">{a.explanation}</p>
               )}
             </div>
           ))

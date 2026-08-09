@@ -13,12 +13,12 @@ export default function ScoreBarChart({ correct, wrong }: Props) {
     <div className="space-y-3">
       <div>
         <div className="flex justify-between text-sm mb-1">
-          <span className="text-green-700 font-medium">Correct</span>
+          <span className="text-green-500 font-medium">Correct</span>
           <span>{correct} ({correctPct}%)</span>
         </div>
         <div className="w-full bg-gray-200 rounded h-4">
           <div
-            className="bg-green-600 h-4 rounded"
+            className="bg-green-500 h-4 rounded"
             style={{ width: `${(correct / maxCount) * 100}%` }}
           />
         </div>

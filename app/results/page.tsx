@@ -124,12 +124,12 @@ export default function ResultsPage() {
                                 </p>
                                 <p className="text-sm mt-1">
                                     Your answer:{" "}
-                                    <span className={a.isCorrect ? "text-green-700" : "text-red-700"}>
+                                    <span className={a.isCorrect ? "text-green-500" : "text-red-700"}>
                                         {a.selected || "(not answered)"}
                                     </span>
                                 </p>
                                 {!a.isCorrect && (
-                                    <p className="text-sm text-green-700">Correct answer: {a.correct}</p>
+                                    <p className="text-sm text-green-500">Correct answer: {a.correct}</p>
                                 )}
                                 {a.explanation && (
                                     <p className="text-sm text-gray-600 mt-1 italic">{a.explanation}</p>
