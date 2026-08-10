@@ -46,6 +46,7 @@ export async function trySyncQueue(): Promise<void> {
             questionId: a.questionId,
             selected: a.selected,
             isCorrect: a.isCorrect,
+            options: a.options || [],
           })),
           score: attempt.score,
           totalQuestions: attempt.totalQuestions,

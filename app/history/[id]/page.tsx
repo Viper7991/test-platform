@@ -53,39 +53,43 @@ export default function AttemptDetailPage() {
 
     return (
         <div className="max-w-screen min-h-screen bg-white dark:bg-slate-900">
-        <div className="p-8 max-w-2xl mx-auto">
-            <div className="flex items-center gap-3 mb-6">
-                <button
-                    onClick={() => router.push('/history')}
-                    aria-label="Back to History"
-                    className="inline-flex items-center justify-center p-1.5 rounded-xl border border-white/40 text-white font-bold bg-transparent transition-all duration-300 ease-in-out hover:border-amber-200 hover:text-amber-200 hover:bg-amber-400/5 hover:shadow-[0_0_18px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-amber-400/20"
-                >
-                    <ArrowLeft02Icon size={20} />
-                </button>
+            <div className="p-8 max-w-2xl mx-auto">
+                <div className="flex items-center gap-3 mb-4">
+                    <button
+                        onClick={() => router.push('/history')}
+                        aria-label="Back to History"
+                        className="inline-flex items-center justify-center p-1 rounded-xl border border-white/40 text-white font-bold bg-transparent transition-all duration-300 ease-in-out hover:border-amber-200 hover:text-amber-200 hover:bg-amber-400/5 hover:shadow-[0_0_18px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-amber-400/20"
+                    >
+                        <ArrowLeft02Icon size={20} />
+                    </button>
 
-                <h1 className="text-2xl font-bold text-white">
-                    {formatModeLabel(attempt.mode, categories)}
-                </h1>
+                    <h1 className="text-[22px] sm:text-3xl font-bold text-white">
+                        {formatModeLabel(attempt.mode, categories)}
+                    </h1>
+                </div>
+                <div className="flex justify-between items-center">
+                    <p className="text-sm text-gray-300 mb-4">
+                        {new Date(attempt.submittedAt).toLocaleString()}
+                        {attempt.reattemptOf && (
+                            <span className="ml-2 text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded">
+                                ↻ Reattempt
+                            </span>
+                        )}
+                    </p>
+                    <p className="text-sm text-gray-300 mb-4">
+                        Click 🚩 to report
+                    </p>
+                </div>
+
+                <div className="border rounded-lg p-5 mb-6">
+                    <p className="text-2xl font-bold mb-4">
+                        {attempt.score} / {attempt.totalQuestions}
+                    </p>
+                    <ScoreBarChart correct={correct} wrong={wrong} />
+                </div>
+
+                <AttemptQuestionDetail answers={attempt.answers} />
             </div>
-
-            <p className="text-sm text-gray-600 mb-6">
-                {new Date(attempt.submittedAt).toLocaleString()}
-                {attempt.reattemptOf && (
-                    <span className="ml-2 text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded">
-                        ↻ Reattempt
-                    </span>
-                )}
-            </p>
-
-            <div className="border rounded-lg p-5 mb-6">
-                <p className="text-2xl font-bold mb-4">
-                    {attempt.score} / {attempt.totalQuestions}
-                </p>
-                <ScoreBarChart correct={correct} wrong={wrong} />
-            </div>
-
-            <AttemptQuestionDetail answers={attempt.answers} />
-        </div>
         </div>
     );
 }

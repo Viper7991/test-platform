@@ -60,7 +60,7 @@ export default function QuestionNavigator({
         })}
       </div>
 
-      <div className="space-y-1 text-xs text-gray-600">
+      <div className="space-y-1 text-xs text-gray-300">
         <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-white border border-gray-400 inline-block" /> Not Visited</div>
         <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-red-600 inline-block" /> Skipped</div>
         <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-green-600 inline-block" /> Answered</div>

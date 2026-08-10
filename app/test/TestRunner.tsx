@@ -8,6 +8,7 @@ import { saveAttempt } from "@/lib/test-engine/attempts";
 import { Question, PoolEntry, TestAttempt } from "@/lib/test-engine/types";
 import { pushMarkedToCloud } from "@/lib/test-engine/markedQuestions";
 import QuestionNavigator from "@/app/components/QuestionNavigator";
+import { reportQuestion } from "@/lib/test-engine/reportQuestion";
 
 type Props = {
   mode: string; // "mixed" | "marked" | category label used as mode key
@@ -67,6 +68,18 @@ export default function TestRunner({ mode, reattemptOf, questionIds, allQuestion
 
   if (testQuestions.length === 0) {
     return <div className="p-8">No questions available for this test.</div>;
+  }
+
+  async function handleReport() {
+    const ok = await reportQuestion({
+      questionId: currentQuestion._id,
+      questionText: currentQuestion.questionText,
+      options: currentOptions,
+      correctAnswer: currentQuestion.correctAnswer,
+      selectedAnswer: selectedAnswers[currentQuestion._id] || null,
+      source: "test",
+    });
+    if (ok) alert("Thanks — this question has been reported.");
   }
 
   const currentQuestion = testQuestions[currentIndex];
@@ -131,6 +144,7 @@ export default function TestRunner({ mode, reattemptOf, questionIds, allQuestion
         correct: q.correctAnswer,
         isCorrect: selected === q.correctAnswer,
         explanation: q.explanation,
+        options: optionsByQuestion[q._id],
       };
     });
 
@@ -188,21 +202,26 @@ export default function TestRunner({ mode, reattemptOf, questionIds, allQuestion
               <span className="text-sm text-white/80">
                 Question {currentIndex + 1} of {testQuestions.length}
               </span>
+              <div className="flex items-center gap-2 md:gap-4">
+              <button
+                onClick={toggleMark}
+                className={`text-sm ml-3 shrink-0 ${markedIds.has(currentQuestion._id) ? "text-yellow-600" : "text-gray-400"}`}
+                title="Mark for later review"
+              >
+                {markedIds.has(currentQuestion._id) ? "★ Marked" : "☆ Mark"}
+              </button>
+              <button onClick={handleReport} className="text-sm text-gray-400 hover:text-red-600">
+                🚩Report
+              </button>
               <span className={`font-mono ${timeLeft < 60 ? "text-red-600" : ""}`}>
                 {minutes}:{seconds.toString().padStart(2, "0")}
               </span>
+              </div>
             </div>
 
             <div className="border rounded-lg p-5 mb-4">
               <div className="flex justify-between items-start mb-3">
                 <p className="font-medium text-[15px]">{currentQuestion.questionText}</p>
-                <button
-                  onClick={toggleMark}
-                  className={`text-sm ml-3 shrink-0 ${markedIds.has(currentQuestion._id) ? "text-yellow-600" : "text-gray-400"}`}
-                  title="Mark for later review"
-                >
-                  {markedIds.has(currentQuestion._id) ? "★ Marked" : "☆ Mark"}
-                </button>
               </div>
 
               <div className="space-y-2 text-[14px]">
@@ -236,30 +255,30 @@ export default function TestRunner({ mode, reattemptOf, questionIds, allQuestion
               >
                 Mark & Next
               </button>
-              
-              <div className="flex gap-4">
-              <button
-                onClick={markForReviewAndNext}
-                className="px-4 py-2 border hidden md:block border-purple-600 text-purple-700 rounded bg-purple-600/20"
-              >
-                Mark & Next
-              </button>
 
-              {currentIndex === testQuestions.length - 1 ? (
+              <div className="flex gap-4">
                 <button
-                  onClick={() => handleSubmit(false)}
-                  className="px-4 py-2 border border-white text-white rounded bg-white/10"
+                  onClick={markForReviewAndNext}
+                  className="px-4 py-2 border hidden md:block border-purple-600 text-purple-700 rounded bg-purple-600/20"
                 >
-                  Submit Test
+                  Mark & Next
                 </button>
-              ) : (
-                <button
-                  onClick={goNext}
-                  className="px-4 py-2 border border-white text-white rounded bg-white/10"
-                >
-                  Next
-                </button>
-              )}
+
+                {currentIndex === testQuestions.length - 1 ? (
+                  <button
+                    onClick={() => handleSubmit(false)}
+                    className="px-4 py-2 border border-white text-white rounded bg-white/10"
+                  >
+                    Submit Test
+                  </button>
+                ) : (
+                  <button
+                    onClick={goNext}
+                    className="px-4 py-2 border border-white text-white rounded bg-white/10"
+                  >
+                    Next
+                  </button>
+                )}
               </div>
             </div>
           </div>

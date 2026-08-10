@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { reportQuestion } from "@/lib/test-engine/reportQuestion";
 
 type Answer = {
   questionId: string;
@@ -9,6 +10,7 @@ type Answer = {
   correct: string;
   isCorrect: boolean;
   explanation?: string;
+  options?: string[];
 };
 
 type Props = {
@@ -23,6 +25,18 @@ export default function AnswerReview({ answers }: Props) {
     if (filter === "wrong") return !a.isCorrect;
     return true;
   });
+
+  async function handleReport(a: Answer) {
+    const ok = await reportQuestion({
+      questionId: a.questionId,
+      questionText: a.questionText,
+      options: a.options || [a.correct, a.selected || ""].filter(Boolean),
+      correctAnswer: a.correct,
+      selectedAnswer: a.selected,
+      source: "review",
+    });
+    if (ok) alert("Thanks — this question has been reported.");
+  }
 
   const correctCount = answers.filter((a) => a.isCorrect).length;
   const wrongCount = answers.length - correctCount;
@@ -59,7 +73,12 @@ export default function AnswerReview({ answers }: Props) {
               key={`${a.questionId}-${i}`}
               className={`border rounded p-4 ${a.isCorrect ? "border-green-300" : "border-red-300"}`}
             >
-              <p className="font-medium">{a.questionText}</p>
+              <div className="flex justify-between items-start mb-2">
+                <p className="font-medium">{a.questionText}</p>
+                <button onClick={() => handleReport(a)} className="text-sm text-gray-400 hover:text-red-600 ml-1 shrink-0">
+                  🚩
+                </button>
+              </div>
               <p className="text-sm mt-1">
                 Your answer:{" "}
                 <span className={a.isCorrect ? "text-green-500" : "text-red-600"}>

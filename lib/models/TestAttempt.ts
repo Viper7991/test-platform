@@ -5,6 +5,7 @@ const AnswerSchema = new Schema(
     questionId: { type: Schema.Types.ObjectId, ref: "Question", required: true },
     selected: { type: String, default: null },
     isCorrect: { type: Boolean, required: true },
+    options: [{ type: String }],
   },
   { _id: false }
 );

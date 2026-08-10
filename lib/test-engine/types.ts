@@ -25,6 +25,7 @@ export type TestAttempt = {
     correct: string;
     isCorrect: boolean;
     explanation?: string;
+    options?: string[];
   }[];
   score: number;
   totalQuestions: number;
