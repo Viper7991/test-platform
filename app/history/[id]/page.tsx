@@ -77,7 +77,7 @@ export default function AttemptDetailPage() {
                         )}
                     </p>
                     <p className="text-sm text-gray-300 mb-4">
-                        Click 🚩 to report
+                        ☆ Mark | 🚩 report
                     </p>
                 </div>
 

@@ -79,7 +79,7 @@ export default function HomePage() {
           </span>
         </div>
 
-        <p className="text-gray-200 mt-8 mb-2">Choose how you'd like to practice.</p>
+        <p className="text-gray-200 mt-6 mb-2">Choose how you'd like to practice.</p>
 
         {/* Mixed Test */}
         <div className="border rounded-lg p-5 mb-4">

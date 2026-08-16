@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { reportQuestion } from "@/lib/test-engine/reportQuestion";
+import { useEffect, useState } from "react";
+import { toggleMarkedQuestion, isQuestionMarked, pushMarkedToCloud } from "@/lib/test-engine/markedQuestions";
 
 type Answer = {
   questionId: string;
@@ -36,6 +37,27 @@ export default function AnswerReview({ answers }: Props) {
       source: "review",
     });
     if (ok) alert("Thanks — this question has been reported.");
+  }
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [starredIds, setStarredIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    fetch("/api/auth/me").then((r) => r.json()).then((d) => setIsLoggedIn(!!d.user));
+    setStarredIds(new Set(answers.filter((a) => isQuestionMarked(a.questionId)).map((a) => a.questionId)));
+  }, [answers]);
+
+  async function handleToggleStar(questionId: string) {
+    toggleMarkedQuestion(questionId);
+    setStarredIds((prev) => {
+      const updated = new Set(prev);
+      if (updated.has(questionId)) updated.delete(questionId);
+      else updated.add(questionId);
+      return updated;
+    });
+    if (isLoggedIn) {
+      await pushMarkedToCloud();
+    }
   }
 
   const correctCount = answers.filter((a) => a.isCorrect).length;
@@ -75,9 +97,17 @@ export default function AnswerReview({ answers }: Props) {
             >
               <div className="flex justify-between items-start mb-2">
                 <p className="font-medium">{a.questionText}</p>
-                <button onClick={() => handleReport(a)} className="text-sm text-gray-400 hover:text-red-600 ml-1 shrink-0">
-                  🚩
-                </button>
+                <div className="flex flex-col md:flex-row items-center gap-1">
+                  <button
+                    onClick={() => handleToggleStar(a.questionId)}
+                    className={`text-lg ${starredIds.has(a.questionId) ? "text-yellow-600" : "text-gray-400"}`}
+                  >
+                    {starredIds.has(a.questionId) ? "★" : "☆"}
+                  </button>
+                  <button onClick={() => handleReport(a)} className="text-sm text-gray-400 hover:text-red-600 shrink-0">
+                    🚩
+                  </button>
+                </div>
               </div>
               <p className="text-sm mt-1">
                 Your answer:{" "}
